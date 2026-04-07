@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SaMD 사이버보안 — 2026 스마트 의료 안전 컨퍼런스</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #dbeafe;
+    --accent: #7c3aed;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+    --shadow-lg: 0 4px 24px rgba(0,0,0,.08);
+  }
+
+  body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 40%, #7c3aed 70%, #0f766e 100%);
+    color: #fff;
+    padding: 2rem 2rem 1.5rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .header-content { position: relative; max-width: 900px; margin: 0 auto; }
+  .header-badge {
+    display: inline-block;
+    background: rgba(255,255,255,.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.2);
+    padding: .35rem 1rem;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 500;
+    letter-spacing: .03em;
+    margin-bottom: 1rem;
+  }
+  .header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: .75rem;
+  }
+  .header p {
+    font-size: 1.05rem;
+    opacity: .85;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* ── Content ── */
+  .content-area {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: 2rem;
+    letter-spacing: .03em;
+  }
+
+  /* ── Cards Grid ── */
+  .cards-grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .part-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0;
+    box-shadow: var(--shadow);
+    transition: transform .25s ease, box-shadow .25s ease;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .part-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .card-accent {
+    height: 5px;
+    width: 100%;
+  }
+  .card-accent-1 { background: linear-gradient(90deg, #1e3a5f, #2563eb, #7c3aed); }
+  .card-accent-2 { background: linear-gradient(90deg, #312e81, #7c3aed, #2563eb); }
+  .card-accent-3 { background: linear-gradient(90deg, #134e4a, #0f766e, #7c3aed); }
+
+  .card-body {
+    padding: 2rem 2rem 1.8rem;
+  }
+
+  .card-part-label {
+    display: inline-block;
+    padding: .2rem .7rem;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 600;
+    margin-bottom: .8rem;
+  }
+  .label-1 { background: var(--primary-light); color: var(--primary-dark); }
+  .label-2 { background: #ede9fe; color: #6d28d9; }
+  .label-3 { background: #ccfbf1; color: #115e59; }
+
+  .card-body h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: .5rem;
+    line-height: 1.4;
+  }
+
+  .card-body .subtitle {
+    font-size: .95rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+
+  .card-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .topic-tag {
+    display: inline-block;
+    padding: .2rem .6rem;
+    border-radius: 6px;
+    font-size: .75rem;
+    font-weight: 500;
+    background: #f1f5f9;
+    color: #475569;
+  }
+
+  .card-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--primary);
+    transition: gap .2s ease;
+  }
+  .part-card:hover .card-cta {
+    gap: .7rem;
+  }
+  .card-cta-1 { color: #2563eb; }
+  .card-cta-2 { color: #7c3aed; }
+  .card-cta-3 { color: #0f766e; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    font-size: .82rem;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border);
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .card-body { padding: 1.5rem; }
+    .content-area { padding: 2rem 1rem 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-content">
+    <span class="header-badge"><img src="vway_logo.png" alt="VWAY" style="height:1.1em;vertical-align:middle;margin-right:.4rem;">2026 스마트 의료 안전 컨퍼런스</span>
+    <h1>SaMD 사이버보안<br>관리체계 구축·운영 전략</h1>
+    <p>세 파트로 구성된 강의 자료 — 어프로치 분석부터 실행 로드맵까지</p>
+  </div>
+</header>
+
+<main class="content-area">
+  <p class="section-title">강의 구성</p>
+
+  <div class="cards-grid">
+
+    <!-- Part 1 -->
+    <a href="presentation_part1.html" class="part-card">
+      <div class="card-accent card-accent-1"></div>
+      <div class="card-body">
+        <span class="card-part-label label-1">Part 1</span>
+        <h2>SaMD 제조업체의 사이버보안<br>관리체계 구축·운영 어프로치 분석</h2>
+        <p class="subtitle">도입과 운영, 두 축에서 바라본 세 가지 옵션의 구조적 비교</p>
+        <div class="card-topics">
+          <span class="topic-tag">들어가며</span>
+          <span class="topic-tag">분석 프레임</span>
+          <span class="topic-tag">도입 어프로치</span>
+          <span class="topic-tag">운영 어프로치</span>
+          <span class="topic-tag">비교 요약</span>
+          <span class="topic-tag">결론</span>
+        </div>
+        <span class="card-cta card-cta-1">강의 보기 &rarr;</span>
+      </div>
+    </a>
+
+    <!-- Part 2 -->
+    <a href="presentation_part2.html" class="part-card">
+      <div class="card-accent card-accent-2"></div>
+      <div class="card-body">
+        <span class="card-part-label label-2">Part 2</span>
+        <h2>컨설팅사의 대응 전략 분석</h2>
+        <p class="subtitle">SaMD 사이버보안 수요에 시장은 어떻게 반응하고 있는가</p>
+        <div class="card-topics">
+          <span class="topic-tag">분석의 관점</span>
+          <span class="topic-tag">공통 방향성</span>
+          <span class="topic-tag">4가지 유형</span>
+          <span class="topic-tag">서비스 포트폴리오</span>
+          <span class="topic-tag">피해야 할 함정</span>
+          <span class="topic-tag">시장의 신호</span>
+        </div>
+        <span class="card-cta card-cta-2">강의 보기 &rarr;</span>
+      </div>
+    </a>
+
+    <!-- Part 3 -->
+    <a href="presentation_part3.html" class="part-card">
+      <div class="card-accent card-accent-3"></div>
+      <div class="card-body">
+        <span class="card-part-label label-3">Part 3</span>
+        <h2>실질적 대응 방안<br>브이웨이가 여러분께 제안드리는 것</h2>
+        <p class="subtitle">하이브리드 조력자로서의 구체적 서비스와 실행 로드맵</p>
+        <div class="card-topics">
+          <span class="topic-tag">앞선 분석 요약</span>
+          <span class="topic-tag">기본 원칙</span>
+          <span class="topic-tag">도입 단계</span>
+          <span class="topic-tag">운영 단계</span>
+          <span class="topic-tag">상황별 추천</span>
+          <span class="topic-tag">실행 3단계</span>
+        </div>
+        <span class="card-cta card-cta-3">강의 보기 &rarr;</span>
+      </div>
+    </a>
+
+  </div>
+</main>
+
+<footer class="footer">
+  2026 스마트 의료 안전 컨퍼런스 · SaMD 사이버보안 관리체계
+</footer>
+
+</body>
+</html>

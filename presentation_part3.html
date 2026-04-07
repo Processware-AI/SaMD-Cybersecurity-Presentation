@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>실질적 대응 방안 — SaMD 사이버보안</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root{
+    --primary:#0f766e;
+    --primary-dark:#115e59;
+    --primary-light:#ccfbf1;
+    --accent:#7c3aed;
+    --accent-light:#ede9fe;
+    --bg:#f8fafc;
+    --surface:#ffffff;
+    --text:#1e293b;
+    --text-secondary:#64748b;
+    --border:#e2e8f0;
+    --success:#059669;
+    --warning:#d97706;
+    --danger:#dc2626;
+    --radius:12px;
+    --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+  }
+
+  body{font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+
+  /* ── Header ── */
+  /* ── Fixed Top ── */
+  .fixed-top{position:sticky;top:0;z-index:200}
+
+  .header{background:linear-gradient(135deg,#134e4a 0%,#0f766e 45%,#7c3aed 100%);color:#fff;padding:1.5rem 2rem 1.2rem;text-align:center;position:relative;overflow:hidden}
+  .header::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+  .header-content{position:relative;max-width:900px;margin:0 auto}
+  .header-badge{display:inline-block;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);padding:.35rem 1rem;border-radius:999px;font-size:.8rem;font-weight:500;letter-spacing:.03em;margin-bottom:1rem}
+  .header h1{font-size:clamp(1.5rem,4vw,2.2rem);font-weight:700;line-height:1.35;margin-bottom:.5rem}
+  .header p{font-size:1rem;opacity:.85;max-width:640px;margin:0 auto}
+
+  /* ── Tab Bar ── */
+  .tab-bar-wrapper{background:var(--surface);border-bottom:1px solid var(--border);z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+  .tab-bar{display:flex;max-width:1100px;margin:0 auto;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;gap:2px;padding:0 1rem}
+  .tab-bar::-webkit-scrollbar{display:none}
+  .tab-btn{flex-shrink:0;background:none;border:none;padding:.85rem 1.2rem;font-family:inherit;font-size:.85rem;font-weight:500;color:var(--text-secondary);cursor:pointer;position:relative;transition:color .2s;white-space:nowrap}
+  .tab-btn:hover{color:var(--primary)}
+  .tab-btn.active{color:var(--primary);font-weight:600}
+  .tab-btn.active::after{content:'';position:absolute;bottom:0;left:.5rem;right:.5rem;height:3px;background:var(--primary);border-radius:3px 3px 0 0}
+
+  .progress-bar{height:3px;background:var(--border)}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));transition:width .4s ease}
+
+  /* ── Content ── */
+  .content-area{max-width:960px;margin:0 auto;padding:2rem 1.5rem 4rem}
+  .tab-panel{display:none;animation:fadeIn .35s ease}
+  .tab-panel.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ── Cards ── */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.8rem 2rem;margin-bottom:1.5rem;box-shadow:var(--shadow)}
+  .card h2{font-size:1.35rem;font-weight:700;margin-bottom:.6rem}
+  .card h3{font-size:1.1rem;font-weight:600;margin:1.5rem 0 .5rem;color:var(--primary-dark)}
+  .card h4{font-size:.95rem;font-weight:600;margin:1rem 0 .3rem;color:#334155}
+  .card p,.card li{font-size:.95rem;color:#334155}
+  .card ul,.card ol{padding-left:1.3rem;margin:.5rem 0}
+  .card li{margin-bottom:.3rem}
+
+  /* ── Callout ── */
+  .callout{background:linear-gradient(135deg,var(--primary-light),#dbeafe);border-left:4px solid var(--primary);border-radius:0 var(--radius) var(--radius) 0;padding:1.2rem 1.5rem;margin:1.2rem 0;font-weight:500;font-size:.95rem;line-height:1.8}
+  .callout strong{color:var(--primary-dark)}
+  .callout-accent{background:linear-gradient(135deg,var(--accent-light),var(--primary-light));border-left-color:var(--accent)}
+  .callout-accent strong{color:#5b21b6}
+
+  /* ── Table ── */
+  .table-wrap{overflow-x:auto;margin:1rem 0;border-radius:var(--radius);border:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse;font-size:.88rem}
+  th{background:#f1f5f9;font-weight:600;text-align:left;padding:.75rem 1rem;border-bottom:2px solid var(--border);white-space:nowrap}
+  td{padding:.65rem 1rem;border-bottom:1px solid var(--border);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#f8fafc}
+
+  /* ── Tags ── */
+  .tag{display:inline-block;padding:.2rem .65rem;border-radius:999px;font-size:.75rem;font-weight:600}
+  .tag-green{background:#d1fae5;color:#065f46}
+  .tag-yellow{background:#fef3c7;color:#92400e}
+  .tag-blue{background:#dbeafe;color:#1e40af}
+  .tag-purple{background:#ede9fe;color:#5b21b6}
+  .tag-teal{background:#ccfbf1;color:#115e59}
+
+  /* ── Section Number ── */
+  .section-num{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--primary);color:#fff;border-radius:10px;font-size:.9rem;font-weight:700;margin-right:.6rem;vertical-align:middle}
+
+  /* ── Principle cards ── */
+  .principle{border-radius:var(--radius);padding:1.3rem 1.5rem;margin-bottom:1rem;border:1px solid var(--border);background:var(--surface);box-shadow:var(--shadow);position:relative;padding-left:3.5rem}
+  .principle::before{content:attr(data-num);position:absolute;left:1.2rem;top:1.3rem;width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--primary);color:#fff;border-radius:50%;font-size:.8rem;font-weight:700}
+  .principle h4{font-size:1rem;margin:0 0 .3rem;color:var(--text)}
+  .principle p{font-size:.9rem;margin:0}
+
+  /* ── Role card ── */
+  .role-card{border-radius:var(--radius);padding:1.5rem 1.8rem;margin-bottom:1.5rem;border:1px solid;position:relative;overflow:hidden}
+  .role-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+  .role-card.coach{background:#f0fdf4;border-color:#86efac}.role-card.coach::before{background:#059669}
+  .role-card.architect{background:#eff6ff;border-color:#93c5fd}.role-card.architect::before{background:#2563eb}
+  .role-card.ai-ctrl{background:#fdf4ff;border-color:#d8b4fe}.role-card.ai-ctrl::before{background:#7c3aed}
+  .role-card .role-label{display:inline-block;font-size:.72rem;font-weight:700;padding:.15rem .6rem;border-radius:6px;color:#fff;margin-bottom:.5rem}
+  .role-card.coach .role-label{background:#059669}
+  .role-card.architect .role-label{background:#2563eb}
+  .role-card.ai-ctrl .role-label{background:#7c3aed}
+  .role-card h4{font-size:1.05rem;margin:0 0 .4rem;color:var(--text)}
+  .role-card p{font-size:.9rem}
+  .role-card .key-msg{margin-top:.8rem;padding:.8rem 1rem;background:rgba(255,255,255,.7);border-radius:8px;font-size:.88rem;font-style:italic;font-weight:500;color:var(--text)}
+
+  /* ── Scenario cards ── */
+  .scenario{border-radius:var(--radius);padding:1.5rem 1.8rem;margin-bottom:1.2rem;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow)}
+  .scenario .scenario-label{display:inline-block;font-size:.72rem;font-weight:700;padding:.2rem .7rem;border-radius:6px;margin-bottom:.5rem;color:#fff}
+  .scenario.small .scenario-label{background:#059669}
+  .scenario.medium .scenario-label{background:#2563eb}
+  .scenario.large .scenario-label{background:#7c3aed}
+  .scenario h4{font-size:1.05rem;margin:0 0 .4rem}
+  .scenario p{font-size:.9rem}
+  .scenario .logic{margin-top:.8rem;padding:.8rem 1rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:.88rem;font-weight:600;color:#065f46}
+
+  /* ── Steps ── */
+  .step-card{display:flex;gap:1rem;margin-bottom:1.2rem;padding:1.3rem 1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);align-items:flex-start}
+  .step-num{flex-shrink:0;width:48px;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;font-weight:700;color:#fff}
+  .step-num span{font-size:.6rem;font-weight:500;opacity:.8;margin-top:1px}
+  .step-1 .step-num{background:var(--primary)}
+  .step-2 .step-num{background:#2563eb}
+  .step-3 .step-num{background:var(--accent)}
+  .step-body h4{font-size:1rem;margin:0 0 .3rem}
+  .step-body p{font-size:.9rem;margin:0}
+
+  /* ── Final quote ── */
+  .final-quote{background:linear-gradient(135deg,#134e4a,#0f766e);color:#fff;border-radius:var(--radius);padding:2rem 2.2rem;margin:1.5rem 0;font-size:1rem;line-height:1.9;font-weight:400;position:relative}
+  .final-quote::before{content:'\201C';position:absolute;top:.3rem;left:.8rem;font-size:4rem;opacity:.2;font-family:Georgia,serif}
+  .final-quote strong{color:#99f6e4}
+
+  /* ── Nav ── */
+  .nav-footer{display:flex;justify-content:space-between;margin-top:2rem;gap:1rem}
+  .nav-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1.4rem;background:var(--primary);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.88rem;font-weight:500;cursor:pointer;transition:background .2s,transform .1s}
+  .nav-btn:hover{background:var(--primary-dark)}
+  .nav-btn:active{transform:scale(.97)}
+  .nav-btn.secondary{background:#e2e8f0;color:var(--text)}
+  .nav-btn.secondary:hover{background:#cbd5e1}
+
+  .kbd-hint{text-align:center;font-size:.75rem;color:var(--text-secondary);margin-top:1rem;opacity:.6}
+  kbd{display:inline-block;padding:.1rem .4rem;border:1px solid #cbd5e1;border-radius:4px;background:#f1f5f9;font-size:.72rem;font-family:inherit}
+
+  .fit-box{background:#f0fdfa;border:1px solid #99f6e4;border-radius:var(--radius);padding:1rem 1.3rem;margin:.8rem 0;font-size:.9rem}
+  .fit-box strong{color:var(--primary-dark)}
+
+  /* ── Operation items ── */
+  .op-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.6rem;margin:.8rem 0}
+  .op-item{padding:.6rem .9rem;border-radius:8px;background:#f0fdfa;border:1px solid #99f6e4;font-size:.82rem;font-weight:500;text-align:center}
+  .op-item strong{display:block;color:var(--primary-dark);font-size:.72rem;margin-bottom:.15rem}
+</style>
+</head>
+<body>
+
+<!-- Fixed Top: Header + Tab Bar -->
+<div class="fixed-top">
+<header class="header">
+  <div class="header-content">
+    <span class="header-badge"><img src="vway_logo.png" alt="VWAY" style="height:1.1em;vertical-align:middle;margin-right:.4rem;">2026 스마트 의료 안전 컨퍼런스</span>
+    <h1>Part 3. 실질적 대응 방안<br>브이웨이가 여러분께 제안드리는 것</h1>
+    <p>하이브리드 조력자로서의 구체적 서비스와 실행 로드맵</p>
+  </div>
+</header>
+
+<div class="tab-bar-wrapper">
+  <nav class="tab-bar" role="tablist">
+    <button class="tab-btn active" data-tab="0" role="tab">앞선 분석 요약</button>
+    <button class="tab-btn" data-tab="1" role="tab">기본 원칙</button>
+    <button class="tab-btn" data-tab="2" role="tab">도입 단계</button>
+    <button class="tab-btn" data-tab="3" role="tab">운영 단계</button>
+    <button class="tab-btn" data-tab="4" role="tab">상황별 추천</button>
+    <button class="tab-btn" data-tab="5" role="tab">실행 3단계</button>
+    <button class="tab-btn" data-tab="6" role="tab">마치며</button>
+  </nav>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:14.28%"></div></div>
+</div>
+</div><!-- /fixed-top -->
+
+<main class="content-area">
+
+  <!-- ────────── 0. 앞선 분석 요약 ────────── -->
+  <section class="tab-panel active" data-panel="0">
+    <div class="card">
+      <h2><span class="section-num">0</span> 앞선 두 분석이 말해준 것</h2>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0">
+        <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:var(--radius);padding:1.2rem 1.3rem">
+          <strong style="color:#2563eb;font-size:.8rem;display:block;margin-bottom:.3rem">PART 1 · 초반부</strong>
+          <span style="font-size:.9rem">SaMD 제조업체의 어프로치 분석</span><br>
+          <strong style="font-size:.9rem">&rarr; 하이브리드 조합이 불가피</strong>
+        </div>
+        <div style="background:#fdf4ff;border:1px solid #d8b4fe;border-radius:var(--radius);padding:1.2rem 1.3rem">
+          <strong style="color:#7c3aed;font-size:.8rem;display:block;margin-bottom:.3rem">PART 2 · 중반부</strong>
+          <span style="font-size:.9rem">컨설팅사의 대응 전략</span><br>
+          <strong style="font-size:.9rem">&rarr; 전주기·리커링·AI-Native로 재편</strong>
+        </div>
+      </div>
+
+      <p style="margin-top:1rem">
+        여기까지는 공급 측 분석입니다. 여러분께 필요한 것은
+        <strong>"내일 아침 무엇을 해야 하는가"</strong>에 대한 답입니다.
+      </p>
+
+      <div class="callout-accent callout" style="margin-top:1.5rem">
+        <strong>"여러분이 직접 하든, 브이웨이와 함께 하든, AI를 쓰든 — 결국 규제 적합성과 운영 가능성이 중요합니다.
+        브이웨이는 그 세 가지 접근을 모두 지원할 수 있는 하이브리드 조력자입니다."</strong>
+      </div>
+    </div>
+
+    <div class="nav-footer">
+      <span></span>
+      <button class="nav-btn" onclick="goTab(1)">다음: 기본 원칙 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 1. 기본 원칙 ────────── -->
+  <section class="tab-panel" data-panel="1">
+    <div class="card">
+      <h2><span class="section-num">1</span> 브이웨이가 드리는 제안의 기본 원칙</h2>
+      <p style="color:var(--text-secondary)">구체적 서비스로 들어가기 전에, 브이웨이가 일하는 방식의 세 가지 원칙입니다.</p>
+    </div>
+
+    <div class="principle" data-num="1">
+      <h4>"대신 써드리는 사람"을 넘어, 구조와 체계를 장악한 "전문가 그룹"</h4>
+      <p>여러분의 제품과 조직을 가장 잘 아는 건 여러분 자신입니다. 브이웨이의 역할은 <strong>규제 해석과 체계 설계를 제공</strong>하고, 여러분이 실제로 운영 가능한 형태로 남기는 것입니다. 심사 제출 문서와 실제 운영이 분리되는 순간, 체계는 무너집니다.</p>
+    </div>
+
+    <div class="principle" data-num="2">
+      <h4>IEC 62304·ISO 14971·IEC 81001-5-1 기반 프로세스 품질 컨설턴트</h4>
+      <p>일반 정보보안 컨설턴트가 아닙니다. 의료기기 규제와 SW 개발 프로세스를 동시에 이해하기에, 보안지침 요구사항을 <strong>기존 IEC 62304 SDL·QMS와 연결하는 방식</strong>으로 설계합니다. 새로 쌓는 게 아니라 기존 체계를 확장하는 접근이기에, 훨씬 빠르고 현실적입니다.</p>
+    </div>
+
+    <div class="principle" data-num="3">
+      <h4>AI-Native 방식으로 일합니다</h4>
+      <p>단순한 효율화가 아니라 세 가지를 동시에 달성합니다.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-top:.6rem">
+        <div class="fit-box" style="text-align:center;padding:.8rem">
+          <strong style="display:block;margin-bottom:.15rem">가격대</strong>
+          <span style="font-size:.82rem">1인·소규모 조직도 감당 가능</span>
+        </div>
+        <div class="fit-box" style="text-align:center;padding:.8rem">
+          <strong style="display:block;margin-bottom:.15rem">품질 일관성</strong>
+          <span style="font-size:.82rem">개인 역량 편차를 AI 검증이 보완</span>
+        </div>
+        <div class="fit-box" style="text-align:center;padding:.8rem">
+          <strong style="display:block;margin-bottom:.15rem">자립 운영</strong>
+          <span style="font-size:.82rem">AI 도구를 여러분께 이전</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(0)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(2)">다음: 도입 단계 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 2. 도입 단계 ────────── -->
+  <section class="tab-panel" data-panel="2">
+    <div class="card">
+      <h2><span class="section-num">2</span> 도입 단계 — 여러분의 선택에 따른 역할</h2>
+      <p style="color:var(--text-secondary)">여러분이 어떤 도입 방식을 선호하시든, 거기에 맞춰 역할을 조정합니다.</p>
+    </div>
+
+    <!-- Coach -->
+    <div class="role-card coach">
+      <span class="role-label">코치형</span>
+      <h4>"내부에서 직접 만들고 싶다"고 하실 때</h4>
+      <p>여러분의 목적은 내부 역량 내재화와 외부 의존도 축소. 좋은 방향입니다. 브이웨이는 <strong>코치이자 리뷰어</strong>로 들어갑니다.</p>
+      <div class="table-wrap" style="margin-top:.8rem">
+        <table>
+          <thead><tr><th>브이웨이가 해드리는 것</th><th>형태</th></tr></thead>
+          <tbody>
+            <tr><td>규제 요구사항 해설 워크숍</td><td>1~2일 집합 세션</td></tr>
+            <tr><td>현행 체계 Gap 분석 진단</td><td>1주 집중 진단</td></tr>
+            <tr><td>정책서·절차서·양식 목차 설계안</td><td>템플릿 라이브러리 기반</td></tr>
+            <tr><td>내부 작성 문서 리뷰·보완</td><td>격주 리뷰 세션</td></tr>
+            <tr><td>파일럿 제품 보안 요구사항·위협분석 리뷰</td><td>공동 워크숍</td></tr>
+            <tr><td>심사 제출자료 정합성 점검</td><td>제출 전 최종 리뷰</td></tr>
+            <tr><td>모의심사·인터뷰 대응 훈련</td><td>심사 직전 Mock Audit</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="key-msg">"여러분이 직접 만드시되, 틀리지 않게 만들도록 브이웨이가 옆에서 받쳐드립니다."</div>
+    </div>
+
+    <!-- Architect -->
+    <div class="role-card architect">
+      <span class="role-label">설계형</span>
+      <h4>"빠르고 정확하게 구축되길 원하신다"고 하실 때</h4>
+      <p>첫 규제 대응이거나, 허가 일정이 촉박하거나, 보안과 GMP를 동시에 정비해야 할 때.
+      브이웨이는 <strong>체계 설계자이자 구축 리드</strong>로 들어갑니다.</p>
+      <ul style="margin-top:.6rem">
+        <li>착수 진단·범위 정의 &rarr; 정책/절차/양식/RACI 전체 체계 설계</li>
+        <li>제품군·서비스 구조 분석 기반 위협모델(TARA) 프레임 구축</li>
+        <li>취약점 관리·변경관리·사고대응·침해신고 프로세스 설계</li>
+        <li>허가 제출용 "보호조치 자료" 패키지 정리</li>
+        <li>SBOM 생성·관리 절차와 초기 SBOM 구축</li>
+        <li>내재화 교육·인수인계·시범 운영까지</li>
+      </ul>
+      <div class="fit-box" style="margin-top:.8rem">
+        <strong>차별화:</strong> 규제 문서와 운영 문서를 분리하지 않고, 제품별 기술문서와 조직 절차를 연결하며, 개발/클라우드/배포 구조까지 고려한 설계. ISO 13485·IEC 62304 경험으로 기존 QMS 위에 보안지침을 올리는 작업이 매끄럽습니다.
+      </div>
+      <div class="key-msg">"브이웨이가 설계하고, 여러분이 운영하실 수 있게 남겨드립니다."</div>
+    </div>
+
+    <!-- AI Control -->
+    <div class="role-card ai-ctrl">
+      <span class="role-label">AI 통제형</span>
+      <h4>"AI를 써서 빠르게 구축하고 싶다"고 하실 때</h4>
+      <p>브이웨이는 <strong>AI 적용 설계자이자 품질 통제자</strong>로 들어갑니다.</p>
+      <ul style="margin-top:.6rem">
+        <li>AI 활용 범위 정의 및 경계 설정</li>
+        <li>규제형 문서 초안 생성을 위한 <strong>프롬프트·템플릿 라이브러리</strong> 제공</li>
+        <li>보안 요구사항 코파일럿 구축</li>
+        <li>위협 시나리오 후보 자동 도출 체계</li>
+        <li>변경영향분석 초안 자동화</li>
+        <li>문서 간 정합성 자동 검토 파이프라인</li>
+        <li>AI 결과의 전문가 검토·승인 기준 수립 (Human-in-the-Loop)</li>
+      </ul>
+      <div class="fit-box" style="margin-top:.8rem;background:#fdf4ff;border-color:#d8b4fe">
+        <strong style="color:#7c3aed">장점:</strong> 도구가 여러분 조직에 남습니다. 프로젝트가 끝나도 계속 AI를 활용해 문서를 생성·갱신할 수 있습니다.
+      </div>
+      <div class="key-msg">"AI로 빠르게 만들되, 규제형 품질로 다듬어 드립니다. 그리고 그 도구는 여러분께 남습니다."</div>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(1)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(3)">다음: 운영 단계 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 3. 운영 단계 ────────── -->
+  <section class="tab-panel" data-panel="3">
+    <div class="card">
+      <h2><span class="section-num">3</span> 운영 단계 — 구축 후가 진짜 시작입니다</h2>
+      <p>취약점 모니터링, 변경영향평가, 사고 대응, 증적관리가 <strong>매일·매월·매분기</strong> 돌아가야 합니다.</p>
+    </div>
+
+    <!-- 고도화 파트너 -->
+    <div class="role-card coach">
+      <span class="role-label">고도화 파트너형</span>
+      <h4>"내부 인력으로 운영하겠다"고 하실 때</h4>
+      <p>내부 운영은 제품 이해도 면에서 가장 강력한 선택. 브이웨이는 <strong>정기적으로 받쳐드리는 방식</strong>으로 조력합니다.</p>
+      <div class="op-grid">
+        <div class="op-item"><strong>월간</strong>운영 리뷰 1회<br>취약점 이슈 해석</div>
+        <div class="op-item"><strong>분기</strong>내부점검 체크리스트<br>문서 개정 리뷰</div>
+        <div class="op-item"><strong>반기</strong>보안 운영 현황 감사<br>개선 권고</div>
+        <div class="op-item"><strong>연간</strong>모의심사(Mock Audit)<br>신규 인력 온보딩</div>
+        <div class="op-item"><strong>수시</strong>경영층 KPI<br>대시보드 설계</div>
+      </div>
+      <div class="key-msg">"여러분이 운영하시되, 무너지지 않도록 브이웨이가 정기적으로 받쳐드립니다."</div>
+    </div>
+
+    <!-- vCISO -->
+    <div class="role-card architect">
+      <span class="role-label">vCISO형 운영 파트너</span>
+      <h4>"전문가 지원이 상시 필요하다"고 하실 때</h4>
+      <p>내부 인력이 부족하거나 보안 운영 전문성이 약한 경우, <strong>외부 보안책임자(vCISO) 역할</strong>을 맡아드립니다.</p>
+      <ul style="margin-top:.6rem">
+        <li>월간 취약점 모니터링 보고 (NVD/KISA/OSS 공지 연동)</li>
+        <li>SBOM 갱신 검토 및 신규 CVE 영향 분석 (분기)</li>
+        <li>변경요청 보안 영향 검토 (상시)</li>
+        <li><strong>침해행위 긴급 대응 SLA</strong> — 초기 대응, 식약처 신고 서류, RCA, 재발방지까지</li>
+        <li>경영층 보고자료·규제기관 질의 대응 보조</li>
+        <li>연간 심사 대비 집중 지원</li>
+      </ul>
+      <div class="fit-box" style="background:#eff6ff;border-color:#93c5fd">
+        <strong style="color:#2563eb">계약 형태:</strong> 월정 리테이너 + 긴급 대응 옵션. 법적 책임은 여러분께 귀속, 브이웨이는 실무의 지속성을 보강.
+      </div>
+      <div class="key-msg">"여러분의 책임은 여러분께 두고, 운영 실무는 브이웨이가 보강해드립니다."</div>
+    </div>
+
+    <!-- AI 자동화 -->
+    <div class="role-card ai-ctrl">
+      <span class="role-label">자동화 파트너형</span>
+      <h4>"AI로 운영을 가볍게 만들고 싶다"고 하실 때</h4>
+      <p>운영 단계는 AI가 가장 큰 효과를 내는 영역입니다.</p>
+      <div class="table-wrap" style="margin-top:.8rem">
+        <table>
+          <thead><tr><th>모듈</th><th>기능</th></tr></thead>
+          <tbody>
+            <tr><td><strong>CVE-SBOM 자동 매칭 봇</strong></td><td>SBOM 업로드 &rarr; 신규 CVE 매칭 &rarr; 심각도 분류 &rarr; 담당자 알림</td></tr>
+            <tr><td><strong>사이버보안 문서 자동 생성기</strong></td><td>제품 정보 &rarr; 절차서·IRP·보안 평가서 초안</td></tr>
+            <tr><td><strong>식약처 신고 보조 챗봇</strong></td><td>증상 입력 &rarr; 신고 양식 + 조치 가이드</td></tr>
+            <tr><td><strong>보안 감사 체크리스트 자동화</strong></td><td>증적 업로드 &rarr; 8개 영역 준수 대시보드</td></tr>
+            <tr><td><strong>변경영향평가 코파일럿</strong></td><td>변경요청서 &rarr; 보호조치 영향 + 변경관리 해당 여부</td></tr>
+            <tr><td><strong>월간 보고서 자동 생성기</strong></td><td>모니터링 + 조치 이력 &rarr; 경영진·규제기관용 보고서</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout" style="margin-top:.8rem">
+        <strong>원칙:</strong> AI는 판단을 "보조"합니다. 배포 중단·사고 판정·환자안전 영향 판단·대외 통지는 <strong>반드시 사람이 결정</strong>합니다. Human-in-the-Loop 구조 자체를 설계해드립니다.
+      </div>
+      <div class="key-msg">"AI가 운영을 가볍게 만들고, 브이웨이는 그 AI가 규제에 맞게 작동하도록 설계해드립니다."</div>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(2)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(4)">다음: 상황별 추천 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 4. 상황별 추천 ────────── -->
+  <section class="tab-panel" data-panel="4">
+    <div class="card">
+      <h2><span class="section-num">4</span> 여러분의 상황별 추천 조합</h2>
+      <p style="color:var(--text-secondary)">"저라면 이렇게 제안드립니다" — 규모·역량·시급성에 따라 다른 조합을 권합니다.</p>
+    </div>
+
+    <!-- 소형 -->
+    <div class="scenario small">
+      <span class="scenario-label">소형 SaMD 기업</span>
+      <h4>인원 30명 미만, 보안 역량 부재</h4>
+      <p>규제 대응 방법을 모르고, 전담 인력 채용은 비현실적이며, 비용에 민감합니다.</p>
+      <div class="fit-box" style="margin-top:.8rem">
+        <strong>제안:</strong>
+        <span class="tag tag-teal">Quick Scan</span> (2~4주 현황 진단) &rarr;
+        <span class="tag tag-blue">Full Build</span> (풀 패키지 구축) &rarr;
+        <span class="tag tag-purple">Annual Retainer</span> (월정 운영 지원)
+        <br>AI 자동화 포함 &rarr; 기존 컨설팅 대비 훨씬 낮은 가격에 가능
+      </div>
+      <div class="logic">"규제 처벌 리스크보다 브이웨이와의 계약이 훨씬 저렴합니다. 그리고 내부 인력 채용 부담이 사라집니다."</div>
+    </div>
+
+    <!-- 중형 -->
+    <div class="scenario medium">
+      <span class="scenario-label">중형 SaMD 기업</span>
+      <h4>인원 30~200명, 일부 보안 역량 보유</h4>
+      <p>QA/RA 담당자가 있지만, 사이버보안 전문성이 부족. 내부 역량을 키우고 싶지만 방법을 모릅니다.</p>
+      <div class="fit-box" style="margin-top:.8rem">
+        <strong>제안:</strong>
+        <span class="tag tag-blue">Co-Build / Advisory 동행</span> +
+        <span class="tag tag-teal">담당자 양성 교육</span>
+        <br>기존 IEC 62304 SDL 프로세스에 보안지침을 "연결"하는 방식 — 새로 시작하는 것이 아닙니다.
+      </div>
+      <div class="logic">"외부 의존 없이 여러분이 스스로 운영할 수 있는 역량을 이식해드립니다."</div>
+    </div>
+
+    <!-- 대형 -->
+    <div class="scenario large">
+      <span class="scenario-label">대형 / 글로벌 진출 기업</span>
+      <h4>내부 보안팀 보유, FDA·EU MDR 정합성 필요</h4>
+      <p>의료기기 특화 규제 이해가 부족하고, 글로벌 규제 정합성이 필요합니다.</p>
+      <div class="fit-box" style="margin-top:.8rem;background:#fdf4ff;border-color:#d8b4fe">
+        <strong style="color:#7c3aed">제안:</strong>
+        <span class="tag tag-purple">Annual Audit</span> (연 1회 독립 검증) +
+        <span class="tag tag-blue">글로벌 규제 Crosswalk</span> +
+        <span class="tag tag-teal">우수 관리체계 인증</span>
+        <br>브이웨이는 기술 보안이 아니라 <strong>규제 해석 전문가</strong>로 역할을 분리합니다.
+      </div>
+      <div class="logic">"여러분의 규제 준수 증거를 국내 식약처와 글로벌 심사 기관이 모두 인정하는 형태로 만들어드립니다."</div>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(3)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(5)">다음: 실행 3단계 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 5. 실행 3단계 ────────── -->
+  <section class="tab-panel" data-panel="5">
+    <div class="card">
+      <h2><span class="section-num">5</span> 지금 바로 시작할 수 있는 3단계</h2>
+      <p style="color:var(--text-secondary)">오늘 이후 여러분께서 바로 실행 가능한 세 가지입니다.</p>
+    </div>
+
+    <div class="step-card step-1">
+      <div class="step-num">1<span>단계</span></div>
+      <div class="step-body">
+        <h4>진단 — 이번 주 내</h4>
+        <p>3가지 질문으로 자가 진단해 보십시오.</p>
+        <ul style="margin-top:.5rem">
+          <li>(a) 사이버보안 담당자가 지정되어 있는가?</li>
+          <li>(b) 침해행위 인지 시 식약처 신고 프로세스가 문서화되어 있는가?</li>
+          <li>(c) 제품 SBOM이 존재하는가?</li>
+        </ul>
+        <div class="fit-box" style="margin-top:.5rem;background:#fff1f2;border-color:#fecdd3">
+          <strong style="color:#991b1b">하나라도 "아니오"라면, 이미 규제 리스크에 노출되어 있습니다.</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card step-2">
+      <div class="step-num">2<span>단계</span></div>
+      <div class="step-body">
+        <h4>Gap Scan — 이번 달 내</h4>
+        <p>자가 진단으로 부족하다면, <strong>Quick Scan 서비스</strong>로 2~4주 내에 보안지침 8개 영역 전체에 대한 현황을 파악하실 수 있습니다.</p>
+        <div class="fit-box" style="margin-top:.5rem">
+          이 진단만으로도 <strong>경영진 의사결정에 쓸 수 있는 단계별 로드맵과 예산 시뮬레이션</strong>이 나옵니다.
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card step-3">
+      <div class="step-num">3<span>단계</span></div>
+      <div class="step-body">
+        <h4>파일럿 착수 — 3개월 내</h4>
+        <p><strong>제품 1종</strong>에 대해 관리체계를 먼저 적용해 보십시오. 전 제품 동시 적용은 비현실적입니다.</p>
+        <div class="fit-box" style="margin-top:.5rem">
+          1개 제품으로 <strong>성공 경험</strong>을 쌓고, 이를 <strong>템플릿화</strong>하여 나머지 제품으로 확산하는 것이 가장 안전한 경로입니다.
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(4)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(6)">다음: 마치며 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 6. 마치며 ────────── -->
+  <section class="tab-panel" data-panel="6">
+    <div class="card">
+      <h2><span class="section-num">6</span> 마치며</h2>
+      <p style="margin-top:.8rem">
+        오늘 짧은 시간이지만 많이 생각할 내용을 함께 해 주셔서 감사드립니다.<br>
+        초반에는 여러분의 어프로치를 분석했고,
+        중반에는 컨설팅 시장이 어떻게 바뀌고 있는지 보여드렸으며,
+        후반에는 브이웨이가 실제로 어떻게 조력해드릴 수 있는지 말씀드렸습니다.
+      </p>
+
+      <div class="final-quote" style="margin-top:1.5rem">
+        <strong>규제 대응은 혼자 하기 어렵고, 외주만으로도 안 되며, AI만으로는 책임질 수 없습니다.</strong><br><br>
+        브이웨이는 이 세 가지를 통합해 여러분의 규제 적합성과 운영 가능성을 하나로 묶어드리는 <strong>하이브리드 실행 파트너</strong>입니다.<br><br>
+        여러분이 어떤 선택을 하시든, <strong>브이웨이가 그 선택을 성공시킬 방법을 가지고 있습니다.</strong>
+      </div>
+
+      <div class="callout" style="margin-top:1.5rem;text-align:center">
+        <strong>규제 시행 초기는 기회의 창입니다.</strong><br>
+        먼저 준비한 기업이 시장의 기준을 정의합니다.<br>
+        <span style="font-size:.9rem;color:var(--text-secondary)">언제든 편하게 연락 주십시오. 감사합니다.</span>
+      </div>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(5)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(0)">처음으로 &circlearrowleft;</button>
+    </div>
+  </section>
+
+</main>
+
+<p class="kbd-hint">
+  <kbd>&larr;</kbd> <kbd>&rarr;</kbd> 키보드 화살표로 탭 이동
+</p>
+
+<script>
+  const tabs=document.querySelectorAll('.tab-btn');
+  const panels=document.querySelectorAll('.tab-panel');
+  const progress=document.getElementById('progressFill');
+  const total=tabs.length;
+
+  function goTab(idx){
+    tabs.forEach(t=>t.classList.remove('active'));
+    panels.forEach(p=>p.classList.remove('active'));
+    tabs[idx].classList.add('active');
+    panels[idx].classList.add('active');
+    progress.style.width=((idx+1)/total*100)+'%';
+    tabs[idx].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  tabs.forEach(btn=>{
+    btn.addEventListener('click',()=>goTab(+btn.dataset.tab));
+  });
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowLeft'){
+      const current=[...tabs].findIndex(t=>t.classList.contains('active'));
+      if(e.key==='ArrowRight'&&current<total-1)goTab(current+1);
+      if(e.key==='ArrowLeft'&&current>0)goTab(current-1);
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>컨설팅사의 대응 전략 분석 — SaMD 사이버보안</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #7c3aed;
+    --primary-dark: #6d28d9;
+    --primary-light: #ede9fe;
+    --accent: #2563eb;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --border: #e2e8f0;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+  }
+
+  body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── Fixed Top ── */
+  .fixed-top {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #312e81 0%, #7c3aed 50%, #2563eb 100%);
+    color: #fff;
+    padding: 1.5rem 2rem 1.2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v20.5z'/%3E%3C/g%3E%3C/svg%3E");
+  }
+  .header-content { position: relative; max-width: 900px; margin: 0 auto; }
+  .header-badge {
+    display: inline-block;
+    background: rgba(255,255,255,.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.2);
+    padding: .35rem 1rem;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 500;
+    letter-spacing: .03em;
+    margin-bottom: 1rem;
+  }
+  .header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: .5rem;
+  }
+  .header p {
+    font-size: 1rem;
+    opacity: .85;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* ── Tab Bar ── */
+  .tab-bar-wrapper {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .tab-bar {
+    display: flex;
+    max-width: 1100px;
+    margin: 0 auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 2px;
+    padding: 0 1rem;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    padding: .85rem 1.2rem;
+    font-family: inherit;
+    font-size: .85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    position: relative;
+    transition: color .2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--primary); }
+  .tab-btn.active { color: var(--primary); font-weight: 600; }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: .5rem; right: .5rem;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 3px 3px 0 0;
+  }
+
+  /* ── Content ── */
+  .content-area {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+  .tab-panel { display: none; animation: fadeIn .35s ease; }
+  .tab-panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.8rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .card h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: .6rem;
+  }
+  .card h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.5rem 0 .5rem;
+    color: var(--primary-dark);
+  }
+  .card h4 {
+    font-size: .95rem;
+    font-weight: 600;
+    margin: 1rem 0 .3rem;
+    color: #334155;
+  }
+  .card p, .card li { font-size: .95rem; color: #334155; }
+  .card ul, .card ol { padding-left: 1.3rem; margin: .5rem 0; }
+  .card li { margin-bottom: .3rem; }
+
+  /* ── Callout ── */
+  .callout {
+    background: linear-gradient(135deg, var(--primary-light), #dbeafe);
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 1.2rem 1.5rem;
+    margin: 1.2rem 0;
+    font-weight: 500;
+    font-size: .95rem;
+    line-height: 1.8;
+  }
+  .callout strong { color: var(--primary-dark); }
+
+  .callout-warn {
+    background: #fff7ed;
+    border-left-color: var(--warning);
+  }
+  .callout-warn strong { color: #92400e; }
+
+  /* ── Table ── */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1rem 0;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .88rem;
+  }
+  th {
+    background: #f1f5f9;
+    font-weight: 600;
+    text-align: left;
+    padding: .75rem 1rem;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: .65rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f8fafc; }
+
+  /* ── Tags ── */
+  .tag {
+    display: inline-block;
+    padding: .2rem .65rem;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 600;
+  }
+  .tag-green  { background: #d1fae5; color: #065f46; }
+  .tag-yellow { background: #fef3c7; color: #92400e; }
+  .tag-red    { background: #fee2e2; color: #991b1b; }
+  .tag-blue   { background: #dbeafe; color: #1e40af; }
+  .tag-purple { background: #ede9fe; color: #5b21b6; }
+  .tag-gray   { background: #f1f5f9; color: #475569; }
+
+  /* ── Type Card (4유형) ── */
+  .type-card {
+    border-radius: var(--radius);
+    padding: 1.4rem 1.5rem;
+    margin-bottom: 1.2rem;
+    border: 1px solid;
+  }
+  .type-card.type-a { background: #eff6ff; border-color: #93c5fd; }
+  .type-card.type-b { background: #f0fdf4; border-color: #86efac; }
+  .type-card.type-c { background: #fdf4ff; border-color: #d8b4fe; }
+  .type-card.type-d { background: #fff7ed; border-color: #fdba74; }
+
+  .type-card .type-label {
+    display: inline-block;
+    font-size: .75rem;
+    font-weight: 700;
+    padding: .15rem .6rem;
+    border-radius: 6px;
+    margin-bottom: .5rem;
+    color: #fff;
+  }
+  .type-a .type-label { background: #2563eb; }
+  .type-b .type-label { background: #059669; }
+  .type-c .type-label { background: #7c3aed; }
+  .type-d .type-label { background: #ea580c; }
+
+  .type-card h4 { margin: 0 0 .4rem; font-size: 1.05rem; color: var(--text); }
+  .type-card p { font-size: .9rem; margin-bottom: .6rem; }
+  .type-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-top: .6rem;
+    font-size: .82rem;
+  }
+  .type-meta span {
+    padding: .2rem .6rem;
+    border-radius: 6px;
+    background: rgba(255,255,255,.7);
+    border: 1px solid rgba(0,0,0,.06);
+  }
+
+  /* ── Trap cards ── */
+  .trap-list {
+    counter-reset: trap;
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+  }
+  .trap-list li {
+    counter-increment: trap;
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    margin-bottom: 1rem;
+    font-size: .93rem;
+    padding: 1rem 1.2rem;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    border-radius: var(--radius);
+  }
+  .trap-list li::before {
+    content: counter(trap);
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--danger);
+    color: #fff;
+    border-radius: 50%;
+    font-size: .75rem;
+    font-weight: 700;
+  }
+
+  /* ── Signal cards ── */
+  .signal-card {
+    border-radius: var(--radius);
+    padding: 1.3rem 1.5rem;
+    margin-bottom: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  .signal-card .signal-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 8px;
+    font-size: .8rem;
+    font-weight: 700;
+    margin-right: .5rem;
+    vertical-align: middle;
+  }
+  .signal-card h4 {
+    display: inline;
+    font-size: 1rem;
+    vertical-align: middle;
+    color: var(--text);
+  }
+  .signal-card p { margin-top: .5rem; font-size: .9rem; }
+
+  /* ── Section Number ── */
+  .section-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 10px;
+    font-size: .9rem;
+    font-weight: 700;
+    margin-right: .6rem;
+    vertical-align: middle;
+  }
+
+  /* ── Nav ── */
+  .nav-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    gap: 1rem;
+  }
+  .nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .65rem 1.4rem;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: .88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+  }
+  .nav-btn:hover { background: var(--primary-dark); }
+  .nav-btn:active { transform: scale(.97); }
+  .nav-btn.secondary { background: #e2e8f0; color: var(--text); }
+  .nav-btn.secondary:hover { background: #cbd5e1; }
+
+  /* ── Progress ── */
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    transition: width .4s ease;
+  }
+
+  /* ── Misc ── */
+  .kbd-hint {
+    text-align: center;
+    font-size: .75rem;
+    color: var(--text-secondary);
+    margin-top: 1rem;
+    opacity: .6;
+  }
+  kbd {
+    display: inline-block;
+    padding: .1rem .4rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: #f1f5f9;
+    font-size: .72rem;
+    font-family: inherit;
+  }
+
+  .fit-box {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: var(--radius);
+    padding: 1rem 1.3rem;
+    margin: .8rem 0;
+    font-size: .9rem;
+  }
+  .fit-box strong { color: var(--primary-dark); }
+
+  /* ── Bridge cards (후반부 연결) ── */
+  .bridge-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.2rem 0;
+  }
+  @media (max-width: 640px) { .bridge-grid { grid-template-columns: 1fr; } }
+  .bridge-card {
+    border-radius: var(--radius);
+    padding: 1.2rem 1.3rem;
+    font-size: .9rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- Fixed Top: Header + Tab Bar -->
+<div class="fixed-top">
+<header class="header">
+  <div class="header-content">
+    <span class="header-badge"><img src="vway_logo.png" alt="VWAY" style="height:1.1em;vertical-align:middle;margin-right:.4rem;">2026 스마트 의료 안전 컨퍼런스</span>
+    <h1>Part 2. 컨설팅사의 대응 전략 분석</h1>
+    <p>SaMD 사이버보안 수요에 시장은 어떻게 반응하고 있는가</p>
+  </div>
+</header>
+
+<div class="tab-bar-wrapper">
+  <nav class="tab-bar" role="tablist">
+    <button class="tab-btn active" data-tab="0" role="tab">분석의 관점</button>
+    <button class="tab-btn" data-tab="1" role="tab">공통 방향성</button>
+    <button class="tab-btn" data-tab="2" role="tab">4가지 유형</button>
+    <button class="tab-btn" data-tab="3" role="tab">서비스 포트폴리오</button>
+    <button class="tab-btn" data-tab="4" role="tab">피해야 할 함정</button>
+    <button class="tab-btn" data-tab="5" role="tab">시장의 신호</button>
+    <button class="tab-btn" data-tab="6" role="tab">후반부 연결</button>
+  </nav>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:14.28%"></div></div>
+</div>
+</div><!-- /fixed-top -->
+
+<!-- Panels -->
+<main class="content-area">
+
+  <!-- ────────── 0. 분석의 관점 ────────── -->
+  <section class="tab-panel active" data-panel="0">
+    <div class="card">
+      <h2><span class="section-num">0</span> 왜 컨설팅사의 대응을 들여다보는가</h2>
+      <p style="margin-top:.8rem;">
+        초반부에서 확인한 것은 명확합니다. SaMD 제조업체는 도입·운영 어느 단계에서도
+        <strong>단독 해결이 어렵고, 하이브리드 조합이 불가피</strong>합니다.
+      </p>
+      <p style="margin-top:.6rem;">
+        그렇다면 이 수요에 컨설팅 시장은 어떻게 반응하고 있을까요?
+      </p>
+
+      <div class="callout" style="margin-top:1.5rem;">
+        <strong>컨설팅사들이 자신의 서비스 모델·조직·도구·수익구조를 어떻게 재편하고 있는지</strong>를 분석합니다.<br>
+        이는 단순한 시장 관찰이 아니라, <strong>"제조업체 입장에서 어떤 컨설팅사를 골라야 하는가"를 판단하기 위한 기준</strong>을 만드는 작업입니다.
+      </div>
+    </div>
+
+    <div class="nav-footer">
+      <span></span>
+      <button class="nav-btn" onclick="goTab(1)">다음: 공통 방향성 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 1. 공통된 방향성 ────────── -->
+  <section class="tab-panel" data-panel="1">
+    <div class="card">
+      <h2><span class="section-num">1</span> 컨설팅사들이 합의하는 5가지 방향</h2>
+      <p style="margin-top:.4rem; color:var(--text-secondary);">여러 컨설팅사가 각기 다른 프레임으로 전략을 제시하지만, 바닥에 깔린 흐름은 놀랍도록 일치합니다.</p>
+
+      <!-- 1.1 -->
+      <h3>1.1 포지셔닝의 근본적 전환</h3>
+      <div class="callout">
+        <strong>"보안 문서 작성 지원업체"</strong> &rarr; <strong>"SaMD 규제형 사이버보안 관리체계 구축·운영 파트너"</strong>
+      </div>
+      <p>
+        규제가 허가 시점에서 끝나지 않고 <strong>변경관리·취약점 대응·사후관리</strong>로 이어지는 전주기 구조라는 점이,
+        컨설팅사의 역할 자체를 재정의하고 있습니다.
+      </p>
+
+      <!-- 1.2 -->
+      <h3>1.2 수익모델의 재편: 일회성 &rarr; 리커링(Recurring)</h3>
+      <p>단발성 구축 컨설팅만으로는 지속 가능성이 없으며, <strong>운영 단계의 월정 리테이너·연간 감사·SLA 기반 사고 대응</strong>으로 수익 기반을 재설계해야 한다는 공통 인식.</p>
+      <div class="table-wrap" style="margin-top:.8rem;">
+        <table>
+          <thead>
+            <tr><th>계층</th><th>성격</th><th>예시</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="tag tag-blue">프로젝트형</span></td>
+              <td>초기 도입, 일회성</td>
+              <td>Gap 분석, 관리체계 수립, 파일럿 적용</td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-purple">리테이너형</span></td>
+              <td>월정·연간 계약</td>
+              <td>vCISO, 취약점 모니터링, 정기점검, 변경영향평가</td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-green">플랫폼형</span></td>
+              <td>구독·도구 기반</td>
+              <td>AI 문서 생성기, CVE-SBOM 매칭, SaaS 대시보드</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 1.3 -->
+      <h3>1.3 서비스 통합: RA/QA + 제품보안 + DevSecOps</h3>
+      <p>
+        기존 <strong>의료기기 RA 컨설팅</strong>(기술 보안 구현 역량 부족)과 <strong>일반 정보보안 컨설팅</strong>(의료기기 규제 이해 부족)의
+        <strong>교차점 공백</strong>이 곧 새로운 시장입니다.
+      </p>
+      <ul style="margin-top:.6rem;">
+        <li><strong>규제/품질 리드</strong> — 디지털의료제품법, 식약처 가이드라인, GMP/QMS 연계</li>
+        <li><strong>제품보안 리드</strong> — 위협모델, SDL, 취약점 대응</li>
+        <li><strong>SW/클라우드 아키텍처 리드</strong> — SaaS형 SaMD, CI/CD, API 구조</li>
+        <li><strong>운영서비스 리드</strong> — 리테이너, 정기점검, 사고대응</li>
+        <li><strong>AI/자동화 리드</strong> — 내부 도구화, 산출물 정합성 검증</li>
+      </ul>
+
+      <!-- 1.4 -->
+      <h3>1.4 AI는 "대체"가 아니라 "증폭" 수단</h3>
+      <div class="callout">
+        <strong>전문가가 프레임을 설계하고, AI가 초안·정리·추적성·반복업무를 가속한다.</strong>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:.8rem; margin-top:.8rem;">
+        <div class="fit-box" style="text-align:center;">
+          <strong style="display:block; margin-bottom:.2rem;">원가 절감</strong>
+          <span style="font-size:.84rem;">1인 컨설턴트의 서비스 범위 확장</span>
+        </div>
+        <div class="fit-box" style="text-align:center;">
+          <strong style="display:block; margin-bottom:.2rem;">품질 일관성</strong>
+          <span style="font-size:.84rem;">개인 역량 편차를 AI 검증이 보완</span>
+        </div>
+        <div class="fit-box" style="text-align:center;">
+          <strong style="display:block; margin-bottom:.2rem;">고객 자립 지원</strong>
+          <span style="font-size:.84rem;">도구를 고객사에 이전해 관계 장기화</span>
+        </div>
+      </div>
+
+      <!-- 1.5 -->
+      <h3>1.5 글로벌 규제 정합성이 차별화 요소로 부상</h3>
+      <p>
+        국내 식약처 보안지침만 다루는 컨설팅사와,
+        <strong>FDA Cybersecurity Guidance·EU MDR·IMDRF N60·IEC 81001-5-1</strong>을 통합 프레임워크로 제시하는 컨설팅사 사이의 격차가 벌어지고 있습니다.
+        해외 진출 수요가 있는 고객에게는 <strong>글로벌 Crosswalk 매핑 역량</strong>이 선택 기준이 됩니다.
+      </p>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(0)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(2)">다음: 4가지 유형 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 2. 4가지 유형 ────────── -->
+  <section class="tab-panel" data-panel="2">
+    <div class="card">
+      <h2><span class="section-num">2</span> 대응 전략의 4가지 유형 — 시장의 분화</h2>
+      <p style="margin-top:.4rem; color:var(--text-secondary);">공통 방향은 있지만, 구체적 실행 모델에서는 네 가지 유형으로 분화되고 있습니다.</p>
+    </div>
+
+    <!-- Type A -->
+    <div class="type-card type-a">
+      <span class="type-label">유형 A</span>
+      <h4>전주기 하이브리드형 (정통 접근)</h4>
+      <p>"프로젝트 + 리테이너 + 플랫폼"의 3층 구조를 균형 있게 가져가는 모델.<br>
+      <strong>Basic(진단) &rarr; Standard(구축) &rarr; Premium(운영)</strong>의 고객 성숙도별 패키지.</p>
+      <div class="type-meta">
+        <span>&#10003; 고객 락인 효과, 안정적 재무구조</span>
+        <span>&#9888; 초기 조직 구축 비용</span>
+        <span>&#128736; 중견 이상 적합</span>
+      </div>
+    </div>
+
+    <!-- Type B -->
+    <div class="type-card type-b">
+      <span class="type-label">유형 B</span>
+      <h4>CaaS(Compliance-as-a-Service) 중심형</h4>
+      <p>인력 부족 중소 SaMD 제조사를 겨냥, <strong>구독형 보안 관리 서비스</strong>를 전면에 내세우는 모델.<br>
+      MSSP와의 전략적 제휴로 24/7 운영 역량을 확보.</p>
+      <div class="type-meta">
+        <span>&#10003; 중소 고객 진입장벽 해소, 반복 매출</span>
+        <span>&#9888; MSSP 의존도, 커스터마이징 제한</span>
+        <span>&#128736; MSSP 파트너십 보유 조직</span>
+      </div>
+    </div>
+
+    <!-- Type C -->
+    <div class="type-card type-c">
+      <span class="type-label">유형 C</span>
+      <h4>AI-Native 플랫폼형</h4>
+      <p>AI를 <strong>서비스 전달 방식 자체</strong>로 전환하는 모델.<br>
+      컨설팅 수수료 &rarr; Annual Retainer &rarr; SaaS 구독으로 비즈니스 모델을 진화.
+      1인 또는 소규모 조직이 AI를 통해 확장성을 확보.</p>
+      <div class="type-meta">
+        <span>&#10003; 원가 경쟁력, 확장성, 차별화</span>
+        <span>&#9888; 초기 플랫폼 개발 투자</span>
+        <span>&#128736; 소규모·1인 전문가, AI 역량 보유자</span>
+      </div>
+    </div>
+
+    <!-- Type D -->
+    <div class="type-card type-d">
+      <span class="type-label">유형 D</span>
+      <h4>기술 심층 특화형</h4>
+      <p>SBOM 관리, 전문 침투 테스트, 위협 인텔리전스, VDP 대행 등 <strong>기술적 심층 서비스</strong>에 집중.<br>
+      Cybellum·HatBOM 등 글로벌 보안 벤더와의 파트너십으로 도구 오케스트레이션 제공.</p>
+      <div class="type-meta">
+        <span>&#10003; 기술적 차별화, 대형 고객 대상 경쟁력</span>
+        <span>&#9888; 규제 문서화 영역 공백</span>
+        <span>&#128736; 보안 기술 중심 기업</span>
+      </div>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(1)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(3)">다음: 서비스 포트폴리오 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 3. 서비스 포트폴리오 ────────── -->
+  <section class="tab-panel" data-panel="3">
+    <div class="card">
+      <h2><span class="section-num">3</span> 서비스 포트폴리오의 실제</h2>
+      <p style="color:var(--text-secondary);">여러 컨설팅사가 제시하는 서비스를 종합한 시장 상품 현황.</p>
+
+      <h3>도입 단계 상품</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>상품명(통칭)</th><th>기간</th><th>성격</th><th>가격대</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Quick Scan / 진단형</strong></td>
+              <td>2~4주</td>
+              <td>현황 진단 + 로드맵</td>
+              <td><span class="tag tag-green">저가 진입</span></td>
+            </tr>
+            <tr>
+              <td><strong>Full Build / 풀패키지</strong></td>
+              <td>4~6개월</td>
+              <td>관리체계 전체 수립</td>
+              <td><span class="tag tag-purple">핵심 수익</span></td>
+            </tr>
+            <tr>
+              <td><strong>Co-Build / Advisory</strong></td>
+              <td>6~9개월</td>
+              <td>내부 주도 + 전문가 동행</td>
+              <td><span class="tag tag-blue">중간 가격</span></td>
+            </tr>
+            <tr>
+              <td><strong>우수 관리체계 인증 지원</strong></td>
+              <td>6~12개월</td>
+              <td>허가 혜택 연계 전략</td>
+              <td><span class="tag tag-yellow">고부가</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>운영 단계 상품</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>상품명(통칭)</th><th>주기</th><th>성격</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Annual Retainer</strong></td><td>월정</td><td>취약점 모니터링, 보고서, IR 지원</td></tr>
+            <tr><td><strong>Annual Audit</strong></td><td>연 1회</td><td>보안지침 준수 독립 검증</td></tr>
+            <tr><td><strong>침해행위 긴급 대응</strong></td><td>사고 발생 시</td><td>신고 지원, RCA, 재발 방지</td></tr>
+            <tr><td><strong>vCISO 지원</strong></td><td>월간</td><td>외부 보안책임자 역할</td></tr>
+            <tr><td><strong>변경영향평가 지원</strong></td><td>상시</td><td>통신기능 변경 &harr; 보호조치 &harr; 변경관리</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>AI/도구 기반 상품</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>모듈</th><th>기능</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>CVE-SBOM 자동 매칭 봇</strong></td><td>SBOM 업로드 &rarr; 신규 CVE 자동 알림</td></tr>
+            <tr><td><strong>사이버보안 문서 자동 생성기</strong></td><td>제품 정보 &rarr; 절차서·IRP 초안</td></tr>
+            <tr><td><strong>식약처 신고 보조 챗봇</strong></td><td>증상 입력 &rarr; 신고 양식 + 조치 가이드</td></tr>
+            <tr><td><strong>보안 감사 체크리스트 자동화</strong></td><td>증적 업로드 &rarr; 준수 대시보드</td></tr>
+            <tr><td><strong>규제 모니터링 봇</strong></td><td>식약처·FDA 공고 &rarr; 고객 영향 분석</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout" style="margin-top:1.2rem;">
+        공통점: <strong>"허가 시점 문서 작성"이라는 단일 상품에서 벗어나,
+        도입-운영-도구화로 이어지는 다층 포트폴리오</strong>가 되었다.
+      </div>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(2)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(4)">다음: 피해야 할 함정 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 4. 피해야 할 함정 ────────── -->
+  <section class="tab-panel" data-panel="4">
+    <div class="card">
+      <h2><span class="section-num">4</span> 컨설팅사들이 경고하는 함정</h2>
+      <p style="color:var(--text-secondary); margin-bottom:1rem;">여러 컨설팅사의 전략 문서에서 피해야 할 대응 방식에 대한 경고가 거의 동일하게 나타납니다.</p>
+
+      <ol class="trap-list">
+        <li>
+          <div>
+            <strong>문서 대행 중심 접근</strong><br>
+            심사 시점에는 그럴듯하지만, 실제 운영 증적이 없으면 곧 무너집니다.
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>일반 정보보안 프레임의 단순 이식</strong><br>
+            ISMS·일반 기업 보안통제를 그대로 가져오면 SaMD의 환자안전·임상성·인허가 문서 구조가 반영되지 않습니다.
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>개발조직과 분리된 규제문서 작성</strong><br>
+            실제 제품 아키텍처·API·배포방식·패치 구조를 모르면 완성도 높은 체계를 만들 수 없습니다.
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>AI 무통제 사용</strong><br>
+            빠른 문서 생산이 가능하지만, 최신 규정 오반영·고객정보 유출·부정확한 기술서술이 오히려 리스크를 증폭시킵니다.
+          </div>
+        </li>
+      </ol>
+
+      <div class="callout" style="margin-top:1rem;">
+        <strong>역으로 말하면:</strong> 컨설팅사를 고를 때 <strong>"이 네 가지 함정을 피하고 있는가"</strong>가 핵심 체크포인트입니다.
+      </div>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(3)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(5)">다음: 시장의 신호 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 5. 시장의 신호 ────────── -->
+  <section class="tab-panel" data-panel="5">
+    <div class="card">
+      <h2><span class="section-num">5</span> 컨설팅 시장이 가리키는 세 가지 신호</h2>
+    </div>
+
+    <div class="signal-card">
+      <span class="signal-num">1</span>
+      <h4>"제대로 된" 컨설팅사의 모습이 바뀌고 있다</h4>
+      <p>
+        <span style="color:var(--text-secondary);">과거의 기준:</span> 템플릿이 많다, 심사 통과 경험이 많다.<br>
+        <span style="color:var(--primary-dark); font-weight:600;">현재의 기준:</span>
+        <strong>규제 해석 + 제품 아키텍처 이해 + 운영 연속성 + AI 활용 통제</strong>가 하나의 조직 안에 결합되어 있는가.
+      </p>
+    </div>
+
+    <div class="signal-card">
+      <span class="signal-num">2</span>
+      <h4>리테이너가 핵심이 된다 = 제조업체도 그렇게 계약해야 한다</h4>
+      <p>
+        컨설팅사들이 리커링 구조로 재편하는 이유는 <strong>규제 자체가 운영 중심</strong>이기 때문입니다.
+        제조업체가 여전히 "한 번에 끝나는 구축 프로젝트"만 찾는다면, 그것은 <strong>규제 구조와 어긋난 계약</strong>입니다.
+      </p>
+    </div>
+
+    <div class="signal-card">
+      <span class="signal-num">3</span>
+      <h4>AI는 선택이 아니라 전제 조건이 되었다</h4>
+      <p>
+        AI를 활용하지 않는 컨설팅사는 <strong>원가 경쟁력에서 밀리고, 품질 일관성에서 편차가 커지며,
+        고객 자립 지원 도구를 제공할 수 없습니다.</strong>
+        제조업체 입장에서도 "AI를 통제된 방식으로 활용하는 컨설팅사"를 선택하는 것이 장기적으로 유리합니다.
+      </p>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(4)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(6)">다음: 후반부 연결 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 6. 후반부 연결 ────────── -->
+  <section class="tab-panel" data-panel="6">
+    <div class="card">
+      <h2><span class="section-num">6</span> 후반부로의 연결</h2>
+      <p style="margin-top:.6rem; font-size:1.05rem; font-weight:500;">그렇다면 제조업체는 무엇을 해야 하는가?</p>
+
+      <p style="margin-top:1rem;">여기까지 우리는 두 가지를 확인했습니다.</p>
+
+      <div class="bridge-grid" style="margin-top:1rem;">
+        <div class="bridge-card" style="background:#eff6ff; border:1px solid #93c5fd;">
+          <strong style="color:#2563eb; font-size:.8rem; display:block; margin-bottom:.3rem;">PART 1 · 초반부</strong>
+          SaMD 제조업체의 어프로치 분석<br>
+          <strong>&rarr; 단독 옵션은 없고, 하이브리드가 답이다</strong>
+        </div>
+        <div class="bridge-card" style="background:#fdf4ff; border:1px solid #d8b4fe;">
+          <strong style="color:#7c3aed; font-size:.8rem; display:block; margin-bottom:.3rem;">PART 2 · 중반부</strong>
+          컨설팅사의 대응 전략<br>
+          <strong>&rarr; 전주기 파트너·리커링·AI-Native로 시장 재편</strong>
+        </div>
+      </div>
+
+      <div class="callout callout-warn" style="margin-top:1.5rem;">
+        그러나 이 둘 사이에는 여전히 간극이 있습니다.<br>
+        <strong>"컨설팅사가 이렇게 바뀌고 있다"는 공급 측 분석만으로는,
+        제조업체가 내일 아침 무엇을 해야 할지 알 수 없습니다.</strong>
+      </div>
+
+      <div class="fit-box" style="margin-top:1.5rem; background:#f0fdf4; border-color:#86efac;">
+        <strong style="color:#059669; font-size:.95rem;">후반부에서 다룰 내용</strong>
+        <ul style="margin-top:.5rem; padding-left:1.2rem;">
+          <li>기업 규모·보안 성숙도·규제 대응 시급성에 따른 <strong>구체적 의사결정 가이드</strong></li>
+          <li><strong>컨설팅사 선택 체크리스트</strong></li>
+          <li><strong>단계별 실행 로드맵</strong></li>
+          <li>"오늘부터 무엇을 시작할 것인가"에 대한 답</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(5)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(0)">처음으로 &circlearrowleft;</button>
+    </div>
+  </section>
+
+</main>
+
+<p class="kbd-hint">
+  <kbd>&larr;</kbd> <kbd>&rarr;</kbd> 키보드 화살표로 탭 이동
+</p>
+
+<script>
+  const tabs = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+  const progress = document.getElementById('progressFill');
+  const total = tabs.length;
+
+  function goTab(idx) {
+    tabs.forEach(t => t.classList.remove('active'));
+    panels.forEach(p => p.classList.remove('active'));
+    tabs[idx].classList.add('active');
+    panels[idx].classList.add('active');
+    progress.style.width = ((idx + 1) / total * 100) + '%';
+    tabs[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => goTab(+btn.dataset.tab));
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      const current = [...tabs].findIndex(t => t.classList.contains('active'));
+      if (e.key === 'ArrowRight' && current < total - 1) goTab(current + 1);
+      if (e.key === 'ArrowLeft' && current > 0) goTab(current - 1);
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SaMD 사이버보안 관리체계 구축·운영 어프로치 분석</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #dbeafe;
+    --accent: #7c3aed;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --border: #e2e8f0;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+    --shadow-lg: 0 4px 24px rgba(0,0,0,.08);
+  }
+
+  body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── Fixed Top ── */
+  .fixed-top {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #7c3aed 100%);
+    color: #fff;
+    padding: 1.5rem 2rem 1.2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .header-content { position: relative; max-width: 900px; margin: 0 auto; }
+  .header-badge {
+    display: inline-block;
+    background: rgba(255,255,255,.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.2);
+    padding: .35rem 1rem;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 500;
+    letter-spacing: .03em;
+    margin-bottom: 1rem;
+  }
+  .header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: .5rem;
+  }
+  .header p {
+    font-size: 1rem;
+    opacity: .85;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* ── Tab Bar ── */
+  .tab-bar-wrapper {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .tab-bar {
+    display: flex;
+    max-width: 1100px;
+    margin: 0 auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 2px;
+    padding: 0 1rem;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    padding: .85rem 1.2rem;
+    font-family: inherit;
+    font-size: .85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    position: relative;
+    transition: color .2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--primary); }
+  .tab-btn.active { color: var(--primary); font-weight: 600; }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: .5rem; right: .5rem;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 3px 3px 0 0;
+  }
+
+  /* ── Content ── */
+  .content-area {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+  .tab-panel { display: none; animation: fadeIn .35s ease; }
+  .tab-panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.8rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .card h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: .6rem;
+    color: var(--text);
+  }
+  .card h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.5rem 0 .5rem;
+    color: var(--primary-dark);
+  }
+  .card p, .card li { font-size: .95rem; color: #334155; }
+  .card ul, .card ol { padding-left: 1.3rem; margin: .5rem 0; }
+  .card li { margin-bottom: .3rem; }
+
+  /* ── Blockquote ── */
+  .callout {
+    background: linear-gradient(135deg, var(--primary-light), #ede9fe);
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 1.2rem 1.5rem;
+    margin: 1.2rem 0;
+    font-weight: 500;
+    font-size: .95rem;
+    line-height: 1.8;
+  }
+  .callout strong { color: var(--primary-dark); }
+
+  /* ── Table ── */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1rem 0;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .88rem;
+  }
+  th {
+    background: #f1f5f9;
+    font-weight: 600;
+    text-align: left;
+    padding: .75rem 1rem;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: .65rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f8fafc; }
+
+  /* ── Tags ── */
+  .tag {
+    display: inline-block;
+    padding: .2rem .65rem;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 600;
+  }
+  .tag-green  { background: #d1fae5; color: #065f46; }
+  .tag-yellow { background: #fef3c7; color: #92400e; }
+  .tag-red    { background: #fee2e2; color: #991b1b; }
+  .tag-blue   { background: #dbeafe; color: #1e40af; }
+  .tag-purple { background: #ede9fe; color: #5b21b6; }
+
+  /* ── Strength / Weakness boxes ── */
+  .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  @media (max-width: 640px) { .pros-cons { grid-template-columns: 1fr; } }
+  .pros, .cons {
+    border-radius: var(--radius);
+    padding: 1.2rem 1.3rem;
+  }
+  .pros { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .cons { background: #fff7ed; border: 1px solid #fed7aa; }
+  .pros h4 { color: var(--success); margin-bottom: .4rem; font-size: .9rem; }
+  .cons h4 { color: var(--warning); margin-bottom: .4rem; font-size: .9rem; }
+  .pros li, .cons li { font-size: .88rem; }
+
+  /* ── Numbered List Highlight ── */
+  .conclusion-list {
+    counter-reset: clist;
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+  }
+  .conclusion-list li {
+    counter-increment: clist;
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    margin-bottom: .75rem;
+    font-size: .95rem;
+  }
+  .conclusion-list li::before {
+    content: counter(clist);
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 50%;
+    font-size: .78rem;
+    font-weight: 700;
+  }
+
+  /* ── Fit condition box ── */
+  .fit-box {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: var(--radius);
+    padding: 1rem 1.3rem;
+    margin: .8rem 0;
+    font-size: .9rem;
+  }
+  .fit-box strong { color: var(--primary-dark); }
+
+  /* ── Section Number ── */
+  .section-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 10px;
+    font-size: .9rem;
+    font-weight: 700;
+    margin-right: .6rem;
+    vertical-align: middle;
+  }
+
+  /* ── Navigation ── */
+  .nav-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    gap: 1rem;
+  }
+  .nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .65rem 1.4rem;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: .88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+  }
+  .nav-btn:hover { background: var(--primary-dark); }
+  .nav-btn:active { transform: scale(.97); }
+  .nav-btn.secondary { background: #e2e8f0; color: var(--text); }
+  .nav-btn.secondary:hover { background: #cbd5e1; }
+
+  /* ── Progress bar ── */
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    position: relative;
+    margin-top: -.5px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    transition: width .4s ease;
+  }
+
+  /* ── Keyboard hint ── */
+  .kbd-hint {
+    text-align: center;
+    font-size: .75rem;
+    color: var(--text-secondary);
+    margin-top: 1rem;
+    opacity: .6;
+  }
+  kbd {
+    display: inline-block;
+    padding: .1rem .4rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: #f1f5f9;
+    font-size: .72rem;
+    font-family: inherit;
+  }
+</style>
+</head>
+<body>
+
+<!-- Fixed Top: Header + Tab Bar -->
+<div class="fixed-top">
+<header class="header">
+  <div class="header-content">
+    <span class="header-badge"><img src="vway_logo.png" alt="VWAY" style="height:1.1em;vertical-align:middle;margin-right:.4rem;">2026 스마트 의료 안전 컨퍼런스</span>
+    <h1>Part 1. SaMD 제조업체의 사이버보안<br>관리체계 구축·운영 어프로치 분석</h1>
+    <p>도입과 운영, 두 축에서 바라본 세 가지 옵션의 구조적 비교</p>
+  </div>
+</header>
+
+<div class="tab-bar-wrapper">
+  <nav class="tab-bar" role="tablist">
+    <button class="tab-btn active" data-tab="0" role="tab">들어가며</button>
+    <button class="tab-btn" data-tab="1" role="tab">분석 프레임</button>
+    <button class="tab-btn" data-tab="2" role="tab">도입 어프로치</button>
+    <button class="tab-btn" data-tab="3" role="tab">운영 어프로치</button>
+    <button class="tab-btn" data-tab="4" role="tab">비교 요약</button>
+    <button class="tab-btn" data-tab="5" role="tab">결론</button>
+  </nav>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:16.66%"></div></div>
+</div>
+</div><!-- /fixed-top -->
+
+<!-- Panels -->
+<main class="content-area">
+
+  <!-- ────────── 0. 들어가며 ────────── -->
+  <section class="tab-panel active" data-panel="0">
+    <div class="card">
+      <h2><span class="section-num">0</span> 왜 지금 이 논의인가</h2>
+      <p style="margin-top:.8rem;">
+        2025년 1월 <strong>디지털의료제품법</strong> 시행, 2025년 4월 식약처 <strong>「디지털의료기기 전자적 침해행위 보안지침」</strong> 고시,
+        이어진 심사 업무지침서와 민원인 가이드라인까지 —
+        SaMD 제조업체에게 사이버보안은 더 이상 품질활동의 하위 항목이 아니라
+        <strong>허가·변경관리·사후관리와 직접 연결된 규제 대응 영역</strong>이 되었습니다.
+      </p>
+
+      <div class="callout" style="margin-top:1.5rem;">
+        <strong>"제품의 보안성"</strong>과 <strong>"조직의 운영체계"</strong>가 동시에 요구되며,<br>
+        심사 제출자료와 실제 운영이 <strong>일치</strong>해야 한다.
+      </div>
+
+      <p style="margin-top:1rem;">
+        따라서 제조업체의 선택지는 <em>"보안 기능을 넣느냐"</em>가 아니라
+        <strong>"어떤 어프로치로 관리체계를 도입하고 운영할 것인가"</strong>입니다.
+        강의 초반부에서는 이 선택지들을 구조적으로 분석합니다.
+      </p>
+    </div>
+
+    <div class="nav-footer">
+      <span></span>
+      <button class="nav-btn" onclick="goTab(1)">다음: 분석 프레임 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 1. 분석 프레임 ────────── -->
+  <section class="tab-panel" data-panel="1">
+    <div class="card">
+      <h2><span class="section-num">1</span> 분석 프레임 — 두 축, 세 옵션</h2>
+      <p style="margin-top:.6rem;">
+        SaMD 제조업체가 고려할 수 있는 어프로치는 <strong>도입(Build)</strong>과 <strong>운영(Operate)</strong>의
+        두 축으로 나뉘며, 각 축에서 세 가지 옵션이 존재합니다.
+      </p>
+
+      <div class="table-wrap" style="margin-top:1.2rem;">
+        <table>
+          <thead>
+            <tr><th>구분</th><th>도입 단계</th><th>운영 단계</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="tag tag-blue">옵션 1</span></td>
+              <td>자체 수립</td>
+              <td>자체 운영</td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-purple">옵션 2</span></td>
+              <td>외부 전문가 조력 수립</td>
+              <td>외부 전문가 운영 대행</td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-green">옵션 3</span></td>
+              <td>AI 활용</td>
+              <td>AI 적용</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout" style="margin-top:1.2rem;">
+        옵션 1·2는 <strong>"주체"</strong>의 문제, 옵션 3(AI)은 <strong>"수단"</strong>의 문제.<br>
+        AI는 단독 어프로치라기보다 <strong>1과 2를 가속·보강하는 레이어</strong>로 이해해야 합니다.
+      </div>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(0)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(2)">다음: 도입 어프로치 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 2. 도입 어프로치 분석 ────────── -->
+  <section class="tab-panel" data-panel="2">
+
+    <!-- 2.1 -->
+    <div class="card">
+      <h2><span class="section-num">2</span> 도입 어프로치 분석</h2>
+      <h3>2.1 자체 수립</h3>
+      <p>내부 인력이 정책·절차·양식·운영기준을 직접 설계·정착시키는 방식.</p>
+
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>&#10003; 강점</h4>
+          <ul>
+            <li>제품 아키텍처·SDLC·조직 문화에 최적화된 설계 가능</li>
+            <li>장기적 내재화, 외부 의존도 최소화</li>
+            <li>초기 컨설팅 비용 절감</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>&#9888; 약점</h4>
+          <ul>
+            <li>규제 해석 오류 리스크 (IEC 62304 등 해석 편차)</li>
+            <li>수립 기간 장기화 (6~12개월)</li>
+            <li>"문서는 있으나 운영은 안 되는" 형식화 위험</li>
+          </ul>
+        </div>
+      </div>
+      <div class="fit-box">
+        <strong>적합 조건:</strong> RA/QA·SW개발 리더가 내부에 있고, 제품 수가 적으며, 장기 내재화를 지향하는 조직.
+      </div>
+    </div>
+
+    <!-- 2.2 -->
+    <div class="card">
+      <h3>2.2 외부 전문가 조력 수립</h3>
+      <p>컨설팅사·전문기관의 도움을 받아 단기간에 체계를 구축하되 운영 주체는 내부가 유지하는 방식.</p>
+
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>&#10003; 강점</h4>
+          <ul>
+            <li>법령·고시·심사 기대수준을 즉시 반영 → 인허가 리스크 최소화</li>
+            <li>3자 관점의 Gap 분석으로 사각지대 해소</li>
+            <li>수립 기간 단축 (3~6개월), 표준 템플릿 조기 확보</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>&#9888; 약점</h4>
+          <ul>
+            <li>초기 비용 발생</li>
+            <li>외부 산출물이 내부 현실과 괴리 시 "형식 문서" 고착</li>
+            <li>내부 온보딩이 약하면 운영 전환 실패</li>
+          </ul>
+        </div>
+      </div>
+      <div class="fit-box">
+        <strong>성공 조건:</strong> 컨설턴트가 "문서를 대신 써주는" 구조가 아니라,
+        <strong>내부 실무자 워크숍 기반으로 공동 설계</strong>해야 합니다.
+        인수인계와 모의점검이 종료 시점의 핵심 활동입니다.
+      </div>
+    </div>
+
+    <!-- 2.3 -->
+    <div class="card">
+      <h3>2.3 AI 활용</h3>
+      <p>도입 단계에서 AI는 <strong>수립을 대체하지 않고 가속</strong>합니다.</p>
+
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>&#10003; 효과적 활용 영역</h4>
+          <ul>
+            <li>법령·고시·가이드 기반 Gap 분석 자동화</li>
+            <li>정책서·절차서·체크리스트 초안 생성 (시간 60~80% 단축)</li>
+            <li>STRIDE/TARA 기반 위협 시나리오 초안 도출</li>
+            <li>심사 제출자료 간 정합성 점검</li>
+            <li>교육자료·FAQ 자동 생성</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>&#9888; 한계와 통제 원칙</h4>
+          <ul>
+            <li>규제 해석의 최종 판단과 환자안전 영향은 사람이 책임</li>
+            <li>민감 정보를 공개형 AI에 입력하는 것은 통제 필요</li>
+            <li>AI 산출물도 기록 관리, 사람의 검토·승인 절차 필수</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(1)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(3)">다음: 운영 어프로치 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 3. 운영 어프로치 분석 ────────── -->
+  <section class="tab-panel" data-panel="3">
+
+    <!-- 3.1 -->
+    <div class="card">
+      <h2><span class="section-num">3</span> 운영 어프로치 분석</h2>
+      <h3>3.1 자체 운영</h3>
+      <p>내부 조직이 취약점 모니터링, 변경 검토, 사고 대응, 문서 유지관리를 직접 수행.</p>
+
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>&#10003; 강점</h4>
+          <ul>
+            <li>제품·고객·배포환경에 대한 깊은 이해 → 대응 속도와 정확도</li>
+            <li>개발·QA·CS와 자연스러운 연계</li>
+            <li>역량의 조직 내 축적</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>&#9888; 약점</h4>
+          <ul>
+            <li>24/7 모니터링 체계 유지의 현실적 어려움</li>
+            <li>고급 보안 분석 인력 채용·유지의 고정비</li>
+            <li>일상업무에 밀려 정기점검 형식화 가능성</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.2 -->
+    <div class="card">
+      <h3>3.2 외부 전문가 운영 대행</h3>
+      <p>취약점 모니터링, 정기점검, 사고 대응 지원 등을 외부 전문기관(MSSP)이 수행.</p>
+
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>&#10003; 강점</h4>
+          <ul>
+            <li>24/7 SOC, 최신 위협 인텔리전스 활용</li>
+            <li>내부 인력 부족 완화</li>
+            <li>객관적 점검으로 사각지대 해소</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>&#9888; 약점과 한계</h4>
+          <ul>
+            <li>지속적인 구독·위탁 비용</li>
+            <li>제품·임상 맥락 이해 부족 시 오탐 증가</li>
+            <li><strong>법적 책임은 위탁해도 제조업자에게 귀속</strong></li>
+          </ul>
+        </div>
+      </div>
+      <div class="fit-box">
+        <strong>현실적 모델:</strong> 완전 대행보다 <strong>부분 대행형</strong>이 효과적 —
+        월간 취약점 모니터링, 분기 정기점검, 반기 문서 갱신 리뷰,
+        사고 발생 시 포렌식 지원, 심사 직전 집중 지원.
+      </div>
+    </div>
+
+    <!-- 3.3 -->
+    <div class="card">
+      <h3>3.3 AI 적용</h3>
+      <p>운영 단계는 <strong>AI의 효과가 가장 크게 나타나는 영역</strong>입니다.</p>
+
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>&#10003; 효과적 활용 영역</h4>
+          <ul>
+            <li><strong>SBOM + CVE 자동 매칭:</strong> 컴포넌트 목록과 신규 CVE를 자동 대조, CVSS 기반 우선순위 자동 알림</li>
+            <li><strong>AI 이상 탐지:</strong> 접근 로그·API 호출 패턴의 정상 베이스라인 학습, 편차 탐지</li>
+            <li><strong>사고 대응 어시스턴트:</strong> 증상 입력 시 플레이북 가이드, 식약처 신고 양식 초안 생성</li>
+            <li><strong>정기 보고서 자동화:</strong> 취약점·패치·사고 이력 집계, 보고서 초안 생성</li>
+            <li><strong>변경영향분석 보조:</strong> 변경요청서와 위험평가서 간 영향항목 자동 추출</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>&#9888; 통제 원칙</h4>
+          <ul>
+            <li>AI는 "보조", 최종 판단은 사람</li>
+            <li>Human-in-the-Loop 필수</li>
+            <li>AI 자동화 실패 감지 알림·수동 점검 병행</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(2)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(4)">다음: 비교 요약 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 4. 비교 요약 ────────── -->
+  <section class="tab-panel" data-panel="4">
+    <div class="card">
+      <h2><span class="section-num">4</span> 어프로치 비교 요약</h2>
+
+      <h3>도입 단계</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>기준</th><th>자체 수립</th><th>외부 조력 수립</th><th>AI 활용</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>초기 속도</td>
+              <td><span class="tag tag-red">느림</span></td>
+              <td><span class="tag tag-green">빠름</span></td>
+              <td><span class="tag tag-green">매우 빠름</span></td>
+            </tr>
+            <tr>
+              <td>규제 해석 정확도</td>
+              <td>내부 역량 의존</td>
+              <td><span class="tag tag-green">높음</span></td>
+              <td><span class="tag tag-yellow">검토 없으면 불안정</span></td>
+            </tr>
+            <tr>
+              <td>내재화 수준</td>
+              <td><span class="tag tag-green">높음</span></td>
+              <td><span class="tag tag-blue">중~높음</span></td>
+              <td><span class="tag tag-yellow">낮음~중</span></td>
+            </tr>
+            <tr>
+              <td>문서 품질 일관성</td>
+              <td><span class="tag tag-yellow">편차 큼</span></td>
+              <td><span class="tag tag-blue">비교적 높음</span></td>
+              <td><span class="tag tag-green">매우 높음</span></td>
+            </tr>
+            <tr>
+              <td>단독 권장도</td>
+              <td><span class="tag tag-yellow">제한적</span></td>
+              <td><span class="tag tag-green">가장 권장</span></td>
+              <td><span class="tag tag-purple">보조수단</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:2rem;">운영 단계</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>기준</th><th>자체 운영</th><th>외부 운영 대행</th><th>AI 적용</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>제품 이해도</td>
+              <td><span class="tag tag-green">매우 높음</span></td>
+              <td><span class="tag tag-yellow">중간</span></td>
+              <td><span class="tag tag-red">낮음</span></td>
+            </tr>
+            <tr>
+              <td>지속 가능성</td>
+              <td>인력 확보 시 높음</td>
+              <td>계약 의존</td>
+              <td>운영체계 의존</td>
+            </tr>
+            <tr>
+              <td>전문분석 깊이</td>
+              <td><span class="tag tag-yellow">편차 큼</span></td>
+              <td><span class="tag tag-green">높음</span></td>
+              <td><span class="tag tag-purple">보조적</span></td>
+            </tr>
+            <tr>
+              <td>비용 구조</td>
+              <td>인건비 중심</td>
+              <td>용역비 중심</td>
+              <td>도구·통제비</td>
+            </tr>
+            <tr>
+              <td>단독 권장도</td>
+              <td><span class="tag tag-green">필수 기반</span></td>
+              <td><span class="tag tag-blue">부분 대행 권장</span></td>
+              <td><span class="tag tag-purple">강한 보조수단</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(3)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(5)">다음: 결론 &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ────────── 5. 결론 ────────── -->
+  <section class="tab-panel" data-panel="5">
+    <div class="card">
+      <h2><span class="section-num">5</span> 결론 — 어느 하나만으로는 부족하다</h2>
+
+      <p style="margin-top:.8rem;">세 옵션을 개별적으로 분석하면 공통된 결론이 도출됩니다.</p>
+
+      <ol class="conclusion-list" style="margin-top:1.2rem;">
+        <li><strong>자체만으로는 느리고 위험하다</strong> — 규제 해석 편차, 수립 기간, 전문성 공백</li>
+        <li><strong>외부만으로는 내재화가 안 된다</strong> — 문서는 완성되나 운영은 공회전</li>
+        <li><strong>AI만으로는 책임을 질 수 없다</strong> — 가속기일 뿐, 판단과 승인은 사람의 몫</li>
+      </ol>
+
+      <div class="callout" style="margin-top:1.5rem;">
+        SaMD 제조업체가 마주한 현실은 <strong>"하나를 선택하는" 문제가 아니라<br>
+        "어떻게 조합할 것인가"</strong>의 문제입니다.
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1.5rem;">
+        <div class="fit-box" style="background:#f0fdf4; border-color:#86efac;">
+          <strong style="color:#059669;">도입 단계 최적해</strong><br>
+          외부 전문가 조력 + AI 가속 + 내부 책임 승인
+        </div>
+        <div class="fit-box" style="background:#eff6ff; border-color:#93c5fd;">
+          <strong style="color:#2563eb;">운영 단계 최적해</strong><br>
+          자체 운영 중심 + 외부 부분 대행 + AI 자동화
+        </div>
+      </div>
+
+      <p style="margin-top:1.5rem; color:var(--text-secondary); font-size:.9rem;">
+        이것이 초반부 분석이 가리키는 방향이며,
+        <strong>이어지는 중반부에서는 "그렇다면 컨설팅사들은 이 수요에 어떻게 대응하고 있는가"를 분석</strong>하고,
+        후반부에서 구체적인 실행 방안을 제시하겠습니다.
+      </p>
+    </div>
+
+    <div class="nav-footer">
+      <button class="nav-btn secondary" onclick="goTab(4)">&larr; 이전</button>
+      <button class="nav-btn" onclick="goTab(0)">처음으로 &circlearrowleft;</button>
+    </div>
+  </section>
+
+</main>
+
+<p class="kbd-hint">
+  <kbd>&larr;</kbd> <kbd>&rarr;</kbd> 키보드 화살표로 탭 이동
+</p>
+
+<script>
+  const tabs = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+  const progress = document.getElementById('progressFill');
+  const total = tabs.length;
+
+  function goTab(idx) {
+    tabs.forEach(t => t.classList.remove('active'));
+    panels.forEach(p => p.classList.remove('active'));
+    tabs[idx].classList.add('active');
+    panels[idx].classList.add('active');
+    progress.style.width = ((idx + 1) / total * 100) + '%';
+    tabs[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => goTab(+btn.dataset.tab));
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      const current = [...tabs].findIndex(t => t.classList.contains('active'));
+      if (e.key === 'ArrowRight' && current < total - 1) goTab(current + 1);
+      if (e.key === 'ArrowLeft' && current > 0) goTab(current - 1);
+    }
+  });
+</script>
+</body>
+</html>
